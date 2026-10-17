@@ -1,11 +1,23 @@
+const languageButtons=document.querySelectorAll('[data-language]');
+function setLanguage(language){
+ const lang=language==='en'?'en':'de';
+ document.documentElement.lang=lang;
+ document.querySelectorAll('[data-de]').forEach(el=>{el.textContent=el.dataset[lang];});
+ ['aria-label','alt','content'].forEach(attr=>document.querySelectorAll('[data-de-'+attr+']').forEach(el=>el.setAttribute(attr,el.getAttribute('data-'+lang+'-'+attr))));
+ languageButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.language===lang)));
+ try{localStorage.setItem('mico-language',lang);}catch{}
+}
+let savedLanguage='de';try{savedLanguage=localStorage.getItem('mico-language')||'de';}catch{}
+setLanguage(savedLanguage);
+languageButtons.forEach(button=>button.addEventListener('click',()=>setLanguage(button.dataset.language)));
 const y=document.querySelector('#year');if(y)y.textContent=String(new Date().getFullYear());
 const reveal=document.querySelectorAll('[data-reveal]');
 if('IntersectionObserver'in window){const obs=new IntersectionObserver((entries)=>{entries.forEach(({target,isIntersecting})=>{if(isIntersecting){target.classList.add('is-visible');obs.unobserve(target)}})},{threshold:.12});reveal.forEach(el=>obs.observe(el));}else{reveal.forEach(el=>el.classList.add('is-visible'))}
 const source=document.getElementById('gallery-data');
 if(source){
- const items=JSON.parse(source.textContent),modal=document.getElementById('lightbox'),image=document.getElementById('lightbox-image'),name=document.getElementById('lightbox-title'),counter=document.getElementById('lightbox-counter');
+ const items=JSON.parse(source.textContent),modal=document.getElementById('lightbox'),image=document.getElementById('lightbox-image'),counter=document.getElementById('lightbox-counter');
  let current=0,tx=null;
- function showPhoto(index){current=(index+items.length)%items.length;const item=items[current];image.src=item.src;image.alt=item.alt;name.textContent=item.title;counter.textContent=String(current+1).padStart(2,'0')+' / '+String(items.length).padStart(2,'0');}
+ function showPhoto(index){current=(index+items.length)%items.length;const item=items[current];image.src=item.src;image.alt=document.querySelector(`[data-photo="${current}"] img`).alt;counter.textContent=String(current+1).padStart(2,'0')+' / '+String(items.length).padStart(2,'0');}
  document.querySelectorAll('[data-photo]').forEach(btn=>btn.addEventListener('click',()=>{showPhoto(Number(btn.dataset.photo));modal.showModal();}));
  document.getElementById('lightbox-close').addEventListener('click',()=>modal.close());
  document.getElementById('lightbox-prev').addEventListener('click',()=>showPhoto(current-1));
